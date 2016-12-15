@@ -39,8 +39,8 @@ func init() {
 }
 
 // Cross compilation docker containers
-var dockerBase = "karalabe/xgo-base"
-var dockerDist = "karalabe/xgo-"
+var dockerBase = "elasticlic/xgo-base"
+var dockerDist = "elasticlic/xgo-"
 
 // Command line arguments to fine tune the compilation
 var (
@@ -54,6 +54,7 @@ var (
 	crossArgs   = flag.String("depsargs", "", "CGO dependency configure arguments")
 	targets     = flag.String("targets", "*/*", "Comma separated targets to build for")
 	dockerImage = flag.String("image", "", "Use custom docker image instead of official distribution")
+	sshKey      = flag.String("sshKey", "", "An SSH key to use to allow private repo access")
 )
 
 // ConfigFlags is a simple set of flags to define the environment and dependencies.
@@ -65,6 +66,7 @@ type ConfigFlags struct {
 	Branch       string   // Version control branch to build
 	Dependencies string   // CGO dependencies (configure/make based archives)
 	Arguments    string   // CGO dependency configure arguments
+	SSHKey       string   // location of SSH key to use to allow access to Git private repos
 	Targets      []string // Targets to build for
 }
 
@@ -162,6 +164,7 @@ func main() {
 			}
 		}
 	}
+
 	// Assemble the cross compilation environment and build options
 	config := &ConfigFlags{
 		Repository:   flag.Args()[0],
@@ -171,6 +174,7 @@ func main() {
 		Prefix:       *outPrefix,
 		Dependencies: *crossDeps,
 		Arguments:    *crossArgs,
+		SSHKey:       *sshKey,
 		Targets:      strings.Split(*targets, ","),
 	}
 	flags := &BuildFlags{
@@ -191,6 +195,7 @@ func main() {
 			log.Fatalf("Failed to resolve destination path (%s): %v.", *outFolder, err)
 		}
 	}
+
 	// Execute the cross compilation, either in a container or the current system
 	if !xgoInXgo {
 		err = compile(image, config, flags, folder)
@@ -304,6 +309,10 @@ func compile(image string, config *ConfigFlags, flags *BuildFlags, folder string
 	}
 	args = append(args, []string{"-e", "EXT_GOPATH=" + strings.Join(paths, ":")}...)
 
+	if config.SSHKey != "" {
+		args = append(args, "-v", config.SSHKey+":"+"/root/.ssh/id_rsa:ro")
+	}
+
 	args = append(args, []string{image, config.Repository}...)
 	return run(exec.Command("docker", args...))
 }
@@ -337,6 +346,11 @@ func compileContained(config *ConfigFlags, flags *BuildFlags, folder string) err
 	if local {
 		env = append(env, "EXT_GOPATH=/non-existent-path-to-signal-local-build")
 	}
+
+	if config.SSHKey != "" {
+		env = append(env, "SSH_KEY=/root/.ssh/id_rsa")
+	}
+
 	// Assemble and run the local cross compilation command
 	fmt.Printf("Cross compiling %s...\n", config.Repository)
 

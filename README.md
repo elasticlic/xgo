@@ -270,3 +270,12 @@ Some trivial arguments may be passed to the dependencies' configure script via
 
 Note, that since xgo needs to cross compile the dependencies for each platform
 and architecture separately, build time can increase significantly.
+
+### Private Repos
+
+If the project being built sits in a private repo, then you can specify a
+private key to be used to access the repo by using the `--sshKey` argument. Make
+sure you have added the public part of the key to the version control system.
+
+Note that the private key can't be used if it has a passphrase so we recommend
+you do not store this key in a standard location.

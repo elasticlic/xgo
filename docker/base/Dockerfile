@@ -106,6 +106,10 @@ ENV PATH /usr/$ANDROID_CHAIN_ARM/bin:$PATH
 ENV PATH /usr/$ANDROID_CHAIN_ARM64/bin:$PATH
 ENV PATH /usr/$ANDROID_CHAIN_386/bin:$PATH
 
+RUN \
+  apt-get update && \
+  apt-get install -y openssh-client
+
 # Inject the old Go package downloader and tool-chain bootstrapper
 ADD bootstrap.sh /bootstrap.sh
 ENV BOOTSTRAP /bootstrap.sh

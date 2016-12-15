@@ -22,6 +22,26 @@
 #   TARGETS        - Comma separated list of build targets to compile for
 #   GO_VERSION     - Bootstrapped version of Go to disable uncupported targets
 #   EXT_GOPATH     - GOPATH elements mounted from the host filesystem
+#   SSH_KEY        - Optional private key to use with git private repos
+# Configure the system to be able to fetch the repo containing the project to be
+# built without interactive prompts.
+
+# If an SSH key was configured with xgo using -sshKey then configure version
+# control systems to use it
+function init_vcs_key_usage {
+
+  # If id_rsa is not present, we know the user didn't invoke xgo with -sshKey.
+  if [ ! -f /root/.ssh/id_rsa ]; then
+    return
+  fi
+  # Force git commands to use SSL link rather than HTTP so we can use the SSH
+  # key provided by SSH_KEY_URL
+  git config --global url."git@github.com:".insteadOf "https://github.com/"
+
+  # Ensure github fingerprint is cached to prevent interactive prompt
+  ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+}
+
 
 # Define a function that figures out the binary extension
 function extension {
@@ -57,6 +77,9 @@ if [ "$EXT_GOPATH" != "" ]; then
   cd `go list -e -f {{.Dir}} $1`
   export GOPATH=$GOPATH:`pwd`/Godeps/_workspace
 else
+  # Configure version control system to use private SSH key for private repo access
+  init_vcs_key_usage
+
   # Inject all possible Godep paths to short circuit go gets
   GOPATH_ROOT=$GOPATH/src
   IMPORT_PATH=$1
