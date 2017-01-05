@@ -33,17 +33,39 @@ All the necessary Go tool-chains, C cross compilers and platform headers/librari
 have been assembled into a single Docker container, which can then be called as if
 a single command to compile a Go package to various platforms and architectures.
 
+## ElasticLic Additions
+Two additional capabilities have been added to Péter Szilágyi's original project:
+
+### Support for Private Repos
+You can now specify a private key on the xgo command-line which will allow xgo
+to access a private repo. We recommend you create a private key specifically for
+this purpose and ideally, register the public key with the version control
+system as a repo-specific, read-only key. See **Private Repos** below for
+details.
+
+### GCC version selection
+It is now possible to determine which version of GCC is used to build C and C++
+elements of your project.
+
+For gcc before Version 5, you can optionally provide a Major.Minor version. For
+gcc version 5 and beyond, you need only provide the Major version number.
+
+Currently, the base image is configured only with version 4.9, version 5 and
+version 6 by default.
+
+See **Limit Build Targets** below for details.
+
 ## Installation
 
 Although you could build the container manually, it is available as an automatic
 trusted build from Docker's container registry (not insignificant in size):
 
-    docker pull karalabe/xgo-latest
+    docker pull elasticlic/xgo-latest
 
 To prevent having to remember a potentially complex Docker command every time,
 a lightweight Go wrapper was written on top of it.
 
-    go get github.com/karalabe/xgo
+    go get github.com/elasticlic/xgo
 
 ## Usage
 
@@ -68,7 +90,6 @@ If the path is not a canonical import path, but rather a local path (starts with
 a dot `.` or a dash `/`), xgo will use the local GOPATH contents for the cross
 compilation.
 
-
 ### Build flags
 
 A handful of flags can be passed to `go build`. The currently supported ones are
@@ -79,7 +100,6 @@ A handful of flags can be passed to `go build`. The currently supported ones are
   - `-tags='tag list'`: list of build tags to consider satisfied during the build
   - `-ldflags='flag list'`: arguments to pass on each go tool link invocation
   - `-buildmode=mode`: binary type to produce by the compiler
-
 
 ### Go releases
 
@@ -119,7 +139,6 @@ file prefix. This can be overridden with the `-out` flag.
     -rwxr-xr-x  1 root  root   7516368 Nov 24 16:44 iris-v0.3.2-windows-4.0-386.exe
     -rwxr-xr-x  1 root  root   9549416 Nov 24 16:44 iris-v0.3.2-windows-4.0-amd64.exe
 
-
 ### Branch selection
 
 Similarly to `go get`, xgo also uses the `master` branch of a repository during
@@ -139,7 +158,6 @@ the desired branch name through the `--branch` argument.
     -rwxr-xr-x  1 root  root   4209416 Nov 24 16:40 goimports-linux-arm
     -rwxr-xr-x  1 root  root   4348416 Nov 24 16:40 goimports-windows-4.0-386.exe
     -rwxr-xr-x  1 root  root   5415424 Nov 24 16:40 goimports-windows-4.0-amd64.exe
-
 
 ### Remote selection
 
@@ -182,17 +200,22 @@ for now to build mulitple commands in one go.
 By default `xgo` will try and build the specified package to all platforms and
 architectures supported by the underlying Go runtime. If you wish to restrict
 the build to only a few target systems, use the comma separated `--targets` CLI
-argument:
+argument, where each target is of the form `Platform`/`Architecture` or
+`Platform`/`Architecture/GCC version`, with `*` as a wildcard target:
 
   * `--targets=linux/arm`: builds only the ARMv5 Linux binaries (`arm-6`/`arm-7` allowed)
   * `--targets=windows/*,darwin/*`: builds all Windows and OSX binaries
   * `--targets=*/arm`: builds ARM binaries for all platforms
-  * `--targets=*/*`: builds all suppoted targets (default)
+  * `--targets=*/*`: builds all supported targets (default)
+  * `--targets=linux/amd64/4.9`: builds linux amd64 using GCC 4.9
 
 The supported targets are:
 
  * Platforms: `android`, `darwin`, `ios`, `linux`, `windows`
  * Achitectures: `386`, `amd64`, `arm-5`, `arm-6`, `arm-7`, `arm64`
+ * GCC Version (linux targets only): `4.9`, `5`, `6`
+
+If you don't specify a GCC version, GCC 5 is used.
 
 ### Platform versions
 
@@ -206,6 +229,7 @@ selection of specific platform versions by appending them to the OS target strin
  * `--targets=android-16/*`: cross compile to Android Jelly Bean
  * `--targets=darwin-10.9/*`: cross compile to Mac OS X Mavericks
  * `--targets=windows-6.0/*`: cross compile to Windows Vista
+
 
 The supported platforms are:
 
@@ -226,7 +250,7 @@ supported by the requested Android platform version. For iOS frameworks `xgo`
 will bundle armv7 and arm64 by default, and also the x86_64 simulator builds
 if the iPhoneSimulator.sdk was injected by the user:
 
-* Create a new docker image based on xgo: `FROM karalabe/xgo-latest`
+* Create a new docker image based on xgo: `FROM elasticlic/xgo-latest`
 * Inject the simulator SDK: `ADD iPhoneSimulator9.3.sdk.tar.xz /iPhoneSimulator9.3.sdk.tar.xz`
 * Bootstrap the simulator SDK: `$UPDATE_IOS /iPhoneSimulator9.3.sdk.tar.xz`
 
@@ -277,5 +301,26 @@ If the project being built sits in a private repo, then you can specify a
 private key to be used to access the repo by using the `--sshKey` argument. Make
 sure you have added the public part of the key to the version control system.
 
+    $ xgo -sshKey ~/.ssh/my-proj-id_rsa -buildmode=c-archive
+    -targets=linux/amd64/gcc4.8,linux/amd64/gcc5,github.com/my-org/my-proj
+
+
 Note that the private key can't be used if it has a passphrase so we recommend
 you do not store this key in a standard location.
+
+## Building the Docker Images
+
+E.g. to build the latest version (1.7.3 at the time of writing):
+
+    git clone github.com/elasticlic/xgo
+    cd xgo
+    go install
+    cd docker/base
+    docker build -t elasticlic/xgo-base .
+    cd ../go-1.7.3
+    docker build -t elasticlic/xgo-1.7.3 .
+    cd ../go-1.7.x
+    docker build -t elasticlic/xgo-1.7.x .
+    cd ../go-latest
+    docker build -t elasticlic/xgo-latest .
+

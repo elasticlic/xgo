@@ -5,7 +5,7 @@
 
 FROM ubuntu:16.04
 
-MAINTAINER Péter Szilágyi <peterke@gmail.com>
+MAINTAINER Andy Ballingall <andy.ballingall@gmail.com>
 
 # Mark the image as xgo enabled to support xgo-in-xgo
 ENV XGO_IN_XGO 1
@@ -105,6 +105,15 @@ RUN \
 ENV PATH /usr/$ANDROID_CHAIN_ARM/bin:$PATH
 ENV PATH /usr/$ANDROID_CHAIN_ARM64/bin:$PATH
 ENV PATH /usr/$ANDROID_CHAIN_386/bin:$PATH
+
+# Install Alternative linux GCC toolchains
+RUN \
+  apt-get install -y software-properties-common  && \
+  add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
+  apt-get update && \
+  apt-get install -y \
+    gcc-4.9 g++-4.9 \
+    gcc-6 g++-6
 
 RUN \
   apt-get update && \

@@ -314,6 +314,7 @@ func compile(image string, config *ConfigFlags, flags *BuildFlags, folder string
 	}
 
 	args = append(args, []string{image, config.Repository}...)
+	fmt.Println("docker", args)
 	return run(exec.Command("docker", args...))
 }
 
