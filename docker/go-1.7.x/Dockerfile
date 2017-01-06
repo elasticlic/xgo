@@ -2,5 +2,5 @@
 #
 # Released under the MIT license.
 
-FROM elasticlic/xgo-1.7.3
+FROM elasticlic/xgo-1.7.4
 

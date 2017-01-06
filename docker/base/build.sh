@@ -203,6 +203,7 @@ for TARGET in $TARGETS; do
   if [[ $XGOGCC =~ ^[0-9]+$ ]]; then
       # Single version number (e.g. 6)
       XGOGCCMAJOR="$XGOGCC"
+      XGOGCCMINOR=
   elif [[ $XGOGCC =~ ^[0-9]+\.[0-9]+$ ]]; then
       # Major.Minor version number (e.g. 4.7)
       XGOGCCMAJOR=$(echo "$XGOGCC" | cut -d '.' -f 1)

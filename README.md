@@ -56,7 +56,33 @@ version 6 by default.
 See **Limit Build Targets** below for details.
 
 ## Installation
+Before using xgo, [docker](https://www.docker.com/) needs to be installed and
+running, and you need to either build or install the elasticlic/xgo-latest
+docker image - or, if targetting a specific version of go,
+elasticlic/xgo-*<go version>*
 
+### Building elasticlic/xgo-latest docker image.
+
+Run the following script:
+
+    ./buildImage.sh <go version> latest
+
+Where `<go version>` is the version of go which you deem to be the latest. Note
+that if you wish to build a version which is not yet represented by the docker
+definitions, you will need to add the necessary definition to the docker
+directory and update both go-latest and the corresponding go-A.B.x definitions.
+Visit [google's golang distribution](https://storage.googleapis.com/golang/) for
+the URLS and corresponding SHA256 signatures for all published versions of go.
+
+### Building a specific go version docker image.
+
+Run the following script:
+
+    ./buildImage.sh <go version>
+
+Where `<go version>` is the version you wish to build.
+
+### From Docker Registry
 Although you could build the container manually, it is available as an automatic
 trusted build from Docker's container registry (not insignificant in size):
 
@@ -307,20 +333,4 @@ sure you have added the public part of the key to the version control system.
 
 Note that the private key can't be used if it has a passphrase so we recommend
 you do not store this key in a standard location.
-
-## Building the Docker Images
-
-E.g. to build the latest version (1.7.3 at the time of writing):
-
-    git clone github.com/elasticlic/xgo
-    cd xgo
-    go install
-    cd docker/base
-    docker build -t elasticlic/xgo-base .
-    cd ../go-1.7.3
-    docker build -t elasticlic/xgo-1.7.3 .
-    cd ../go-1.7.x
-    docker build -t elasticlic/xgo-1.7.x .
-    cd ../go-latest
-    docker build -t elasticlic/xgo-latest .
 
