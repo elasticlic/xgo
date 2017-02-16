@@ -389,15 +389,15 @@ for TARGET in $TARGETS; do
   if ([ "$XGOOS" == "." ] || [ "$XGOOS" == "linux" ]) && ([ "$XGOARCH" == "." ] || [ "$XGOARCH" == "amd64" ]); then
     echo "Compiling for linux/amd64/gcc${XGOGCC}..."
     HOST=x86_64-linux PREFIX=/usr/local $BUILD_DEPS /deps "${DEPS_ARGS[@]}"
-    CC=gcc-"$XGOGCC" CXX=g++-"$XGOGCC" GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go get $V $X "${T[@]}" --ldflags="$V $LD" -d ./"$PACK"
-    CC=gcc-"$XGOGCC" CXX=g++-"$XGOGCC" GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build $V $X "${T[@]}" --ldflags="$V $LD" $R "$BM" -o "/build/$NAME-linux-amd64-$R$(gccLabel)$(extension linux)" ./"$PACK"
+    CC=gcc-"$XGOGCC" CXX=g++-"$XGOGCC" GOOS=linux GOARCH=amd64 CGO_ENABLED=1 CGO_CFLAGS="-Wa,-mrelax-relocations=no" go get $V $X "${T[@]}" -x --ldflags="$V $LD" -d ./"$PACK"
+    CC=gcc-"$XGOGCC" CXX=g++-"$XGOGCC" GOOS=linux GOARCH=amd64 CGO_ENABLED=1 CGO_CFLAGS="-Wa,-mrelax-relocations=no" go build $V $X "${T[@]}" -x --ldflags="$V $LD" $R "$BM" -o "/build/$NAME-linux-amd64-$R$(gccLabel)$(extension linux)" ./"$PACK"
 
   fi
   if ([ "$XGOOS" == "." ] || [ "$XGOOS" == "linux" ]) && ([ "$XGOARCH" == "." ] || [ "$XGOARCH" == "386" ]); then
     echo "Compiling for linux/386/gcc${XGOGCC}..."
     HOST=i686-linux PREFIX=/usr/local $BUILD_DEPS /deps "${DEPS_ARGS[@]}"
-    CC=gcc-"$XGOGCC" CXX=g++-"$XGOGCC" GOOS=linux GOARCH=386 CGO_ENABLED=1 go get $V $X "${T[@]}" --ldflags="$V $LD" -d ./"$PACK"
-    CC=gcc-"$XGOGCC" CXX=g++-"$XGOGCC" GOOS=linux GOARCH=386 CGO_ENABLED=1 go build $V $X "${T[@]}" --ldflags="$V $LD" "$BM" -o "/build/$NAME-linux-386-$(gccLabel)$(extension linux)" ./"$PACK"
+    CC=gcc-"$XGOGCC" CXX=g++-"$XGOGCC" GOOS=linux GOARCH=386 CGO_ENABLED=1 CGO_CFLAGS="-Wa,-mrelax-relocations=no" go get $V $X "${T[@]}" -x --ldflags="$V $LD" -d ./"$PACK"
+    CC=gcc-"$XGOGCC" CXX=g++-"$XGOGCC" GOOS=linux GOARCH=386 CGO_ENABLED=1 CGO_CFLAGS="-Wa,-mrelax-relocations=no" go build $V $X "${T[@]}" -x --ldflags="$V $LD" "$BM" -o "/build/$NAME-linux-386-$(gccLabel)$(extension linux)" ./"$PACK"
   fi
   if ([ "$XGOOS" == "." ] || [ "$XGOOS" == "linux" ]) && ([ "$XGOARCH" == "." ] || [ "$XGOARCH" == "arm" ] || [ "$XGOARCH" == "arm-5" ]); then
     if [ "$GO_VERSION" -ge 150 ]; then

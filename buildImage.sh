@@ -15,7 +15,7 @@ GO_VERSION=$1
 SCRIPT=$(basename "$0")
 
 if [ "$GO_VERSION" == "" ]; then
-  echo Usage: "$SCRIPT" "<go version>"
+  echo Usage: "$SCRIPT" "<go version> [latest]"
   exit -1
 fi
 
