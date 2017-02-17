@@ -46,15 +46,16 @@ var dockerDist = "elasticlic/xgo-"
 var (
 	goVersion   = flag.String("go", "latest", "Go release to use for cross compilation")
 	srcPackage  = flag.String("pkg", "", "Sub-package to build if not root import")
-	srcRemote   = flag.String("remote", "", "Version control remote repository to build")
-	srcBranch   = flag.String("branch", "", "Version control branch to build")
+	srcRemote   = flag.String("srcremote", "", "Version control remote repository to build")
+	srcBranch   = flag.String("srcbranch", "", "Version control branch to build")
+	srcTag      = flag.String("srctag", "", "Version control tag to build")
 	outPrefix   = flag.String("out", "", "Prefix to use for output naming (empty = package name)")
 	outFolder   = flag.String("dest", "", "Destination folder to put binaries in (empty = current)")
 	crossDeps   = flag.String("deps", "", "CGO dependencies (configure/make based archives)")
 	crossArgs   = flag.String("depsargs", "", "CGO dependency configure arguments")
 	targets     = flag.String("targets", "*/*", "Comma separated targets to build for")
 	dockerImage = flag.String("image", "", "Use custom docker image instead of official distribution")
-	sshKey      = flag.String("sshKey", "", "An SSH key to use to allow private repo access")
+	sshKey      = flag.String("sshkey", "", "An SSH key to use to allow private repo access")
 )
 
 // ConfigFlags is a simple set of flags to define the environment and dependencies.
@@ -64,6 +65,7 @@ type ConfigFlags struct {
 	Prefix       string   // Prefix to use for output naming
 	Remote       string   // Version control remote repository to build
 	Branch       string   // Version control branch to build
+	Tag          string   // Version control tag to build
 	Dependencies string   // CGO dependencies (configure/make based archives)
 	Arguments    string   // CGO dependency configure arguments
 	SSHKey       string   // location of SSH key to use to allow access to Git private repos
@@ -75,8 +77,8 @@ var (
 	buildVerbose = flag.Bool("v", false, "Print the names of packages as they are compiled")
 	buildSteps   = flag.Bool("x", false, "Print the command as executing the builds")
 	buildRace    = flag.Bool("race", false, "Enable data race detection (supported only on amd64)")
-	buildTags    = flag.String("tags", "", "List of build tags to consider satisfied during the build")
-	buildLdFlags = flag.String("ldflags", "", "Arguments to pass on each go tool link invocation")
+	buildTags    = flag.String("buildtags", "", "List of build tags to consider satisfied during the build")
+	buildLdFlags = flag.String("buildldflags", "", "Arguments to pass on each go tool link invocation")
 	buildMode    = flag.String("buildmode", "default", "Indicates which kind of object file to build")
 )
 
@@ -171,6 +173,7 @@ func main() {
 		Package:      *srcPackage,
 		Remote:       *srcRemote,
 		Branch:       *srcBranch,
+		Tag:          *srcTag,
 		Prefix:       *outPrefix,
 		Dependencies: *crossDeps,
 		Arguments:    *crossArgs,
@@ -292,6 +295,7 @@ func compile(image string, config *ConfigFlags, flags *BuildFlags, folder string
 		"-v", depsCache + ":/deps-cache:ro",
 		"-e", "REPO_REMOTE=" + config.Remote,
 		"-e", "REPO_BRANCH=" + config.Branch,
+		"-e", "REPO_TAG=" + config.Tag,
 		"-e", "PACK=" + config.Package,
 		"-e", "DEPS=" + config.Dependencies,
 		"-e", "ARGS=" + config.Arguments,
@@ -332,6 +336,7 @@ func compileContained(config *ConfigFlags, flags *BuildFlags, folder string) err
 	env := []string{
 		"REPO_REMOTE=" + config.Remote,
 		"REPO_BRANCH=" + config.Branch,
+		"REPO_TAG=" + config.Tag,
 		"PACK=" + config.Package,
 		"DEPS=" + config.Dependencies,
 		"ARGS=" + config.Arguments,

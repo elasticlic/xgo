@@ -74,6 +74,10 @@ directory and update both go-latest and the corresponding go-A.B.x definitions.
 Visit [google's golang distribution](https://storage.googleapis.com/golang/) for
 the URLS and corresponding SHA256 signatures for all published versions of go.
 
+The `ROOT_DIST_SHA` should be set to the SHA256 signature (it also accepts
+SHA1 hashes - which it distinguishes via hash length - see fetch.sh in the
+base docker distribution).
+
 ### Building a specific go version docker image.
 
 Run the following script:
