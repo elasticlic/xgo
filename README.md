@@ -150,6 +150,13 @@ Additionally, a few wildcard release strings are also supported:
   - `1.6-develop` will use the develop branch of a specific Go version
   - `develop` will use the develop branch of the entire Go repository
 
+### Adding a new go version
+
+1. Copy an existing go-A.B.C docker definition under xgo/docker
+2. Visit https://storage.googleapis.com/golang and check to see if the linux-amd64.tar.gz with the go version you want is available
+3. Get the associated SHA hash (e.g. from `https://storage.googleapis.com/golang/go1.7.5.linux-amd64.tar.gz.sha256`)
+4. Update go-1.7.x and go-latest docker images to point to the new version (change to go-1.8.x etc. eventually)
+
 ### Output prefixing
 
 xgo by default uses the name of the package being cross compiled as the output
